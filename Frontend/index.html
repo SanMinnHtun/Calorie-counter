@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan AI</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #eef2f5;
+            --panel: #ffffff;
+            --ink: #17212f;
+            --muted: #657386;
+            --line: #dce3ea;
+            --soft: #f6f8fa;
+            --green: #18a86b;
+            --green-dark: #0d8a56;
+            --yellow: #d9931d;
+            --red: #d85656;
+            --blue: #3478cf;
+            --shadow: 0 24px 70px rgba(23, 33, 47, 0.16);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(24, 168, 107, 0.14), transparent 30rem),
+                var(--bg);
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        button, input { font: inherit; }
+
+        .page {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .app {
+            width: min(1040px, 100%);
+            min-height: min(760px, calc(100vh - 48px));
+            background: var(--panel);
+            border: 1px solid rgba(23, 33, 47, 0.09);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #e5f7ef;
+            color: var(--green-dark);
+            border: 2px solid var(--green);
+            font-weight: 800;
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+
+        .brand-title span { color: var(--green); }
+
+        .status-pill {
+            border: 1px solid var(--line);
+            color: var(--muted);
+            background: var(--soft);
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+            gap: 0;
+            min-height: 0;
+        }
+
+        .capture, .results {
+            padding: 24px;
+            min-width: 0;
+        }
+
+        .capture {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 16px;
+            border-right: 1px solid var(--line);
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .text-xs { font-size: 12px; }
+        .text-slate-400 { color: #8a97a8; }
+        .mt-0\.5 { margin-top: 2px; }
+
+        .dropzone {
+            min-height: 390px;
+            border: 2px dashed rgba(24, 168, 107, 0.58);
+            border-radius: 18px;
+            background: #f4fbf8;
+            display: grid;
+            place-items: center;
+            padding: 28px;
+            cursor: pointer;
+            transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+        }
+
+        .dropzone:hover {
+            border-color: var(--green);
+            background: #edf8f3;
+        }
+
+        .dropzone:active { transform: scale(0.995); }
+
+        .dropzone-inner {
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .upload-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 18px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: #dff5ea;
+            color: var(--green-dark);
+        }
+
+        .dropzone strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .dropzone p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .preview {
+            min-height: 390px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: var(--soft);
+            border: 1px solid var(--line);
+            position: relative;
+        }
+
+        .preview img {
+            width: 100%;
+            height: 100%;
+            min-height: 390px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hidden { display: none !important; }
+
+        .results {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 18px;
+            min-height: 0;
+        }
+
+        .state {
+            min-height: 360px;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .state-card {
+            max-width: 310px;
+        }
+
+        .state-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 14px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: var(--soft);
+            color: var(--green-dark);
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 14px;
+            border: 4px solid #dcefe6;
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 900ms linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error {
+            border: 1px solid rgba(216, 86, 86, 0.22);
+            background: #fff4f4;
+            color: #9e2d2d;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .dashboard {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            gap: 18px;
+        }
+
+        .rows {
+            overflow-y: auto;
+            padding-right: 4px;
+            display: grid;
+            align-content: start;
+            gap: 16px;
+        }
+
+        .ingredient-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .ingredient-name {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .weight {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .calories { white-space: nowrap; }
+
+        .bar {
+            height: 9px;
+            margin-top: 8px;
+            border-radius: 999px;
+            background: #edf1f5;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            transition: width 650ms ease;
+        }
+
+        .summary {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid var(--line);
+            background: var(--soft);
+            border-radius: 16px;
+            padding: 15px;
+        }
+
+        .ring {
+            width: 64px;
+            height: 64px;
+            flex: 0 0 auto;
+            position: relative;
+        }
+
+        .ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring span {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .summary-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 3px;
+        }
+
+        .summary-detail {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .summary-detail strong {
+            color: var(--ink);
+            font-size: 16px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            padding: 18px 22px;
+            border-top: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn {
+            min-height: 46px;
+            border: 0;
+            border-radius: 12px;
+            padding: 0 18px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 140ms ease, background 140ms ease;
+        }
+
+        .btn:active { transform: scale(0.985); }
+
+        .btn-primary {
+            flex: 1;
+            color: #ffffff;
+            background: var(--green);
+        }
+
+        .btn-primary:hover { background: var(--green-dark); }
+
+        .btn-secondary {
+            flex: 1;
+            color: var(--ink);
+            background: #e9eef3;
+        }
+
+        .btn-secondary:hover { background: #dfe6ed; }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        @media (max-width: 760px) {
+            .page { padding: 0; }
+            .app {
+                min-height: 100vh;
+                border-radius: 0;
+                border: 0;
+            }
+            .topbar { padding: 15px 16px; }
+            .brand-title { font-size: 18px; }
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .capture {
+                border-right: 0;
+                border-bottom: 1px solid var(--line);
+                padding: 18px 16px;
+            }
+            .results { padding: 18px 16px; }
+            .dropzone, .preview, .preview img {
+                min-height: 300px;
+            }
+            .state { min-height: 230px; }
+            .actions {
+                padding: 14px 16px;
+                position: sticky;
+                bottom: 0;
+            }
+            .status-pill { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="app" aria-label="NutriScan AI food scanner">
+            <header class="topbar">
+                <div class="brand">
+                    <div class="brand-mark">N</div>
+                    <div class="brand-title">NutriScan <span>AI</span></div>
+                </div>
+                <div id="api-status" class="status-pill">Checking API</div>
+            </header>
+
+            <div class="content">
+                <section class="capture">
+                    <div>
+                        <h1 class="section-title">Scan a meal photo</h1>
+                        <p class="section-subtitle">Upload a clear food image to estimate ingredients, portions, and calories.</p>
+                    </div>
+
+                    <label id="upload-box" class="dropzone" for="file-input">
+                        <input class="sr-only" type="file" id="file-input" accept="image/*">
+                        <span class="dropzone-inner">
+                            <span class="upload-icon" aria-hidden="true">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                                    <path d="M4 16.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 3v13m0-13 4.5 4.5M12 3 7.5 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <strong>Choose food image</strong>
+                            <p>Single items and multi-ingredient dishes both work. The app will preview the image before showing results.</p>
+                        </span>
+                    </label>
+
+                    <div id="image-preview-container" class="preview hidden">
+                        <img id="image-preview" src="" alt="Uploaded meal preview">
+                    </div>
+                </section>
+
+                <section class="results" aria-live="polite">
+                    <div id="error-box" class="error hidden"></div>
+
+                    <div id="empty-state" class="state">
+                        <div class="state-card">
+                            <div class="state-icon" aria-hidden="true">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                    <path d="M4 10.5c3-5 13-5 16 0M5 13h14l-1.2 5.4A2 2 0 0 1 15.85 20h-7.7a2 2 0 0 1-1.95-1.6L5 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h2 class="section-title">Ready for a breakdown</h2>
+                            <p class="section-subtitle">Your estimated nutrition dashboard will appear here after upload.</p>
+                        </div>
+                    </div>
+
+                    <div id="loading-state" class="state hidden">
+                        <div class="state-card">
+                            <div class="spinner" aria-hidden="true"></div>
+                            <h2 class="section-title">Analyzing food</h2>
+                            <p class="section-subtitle">Estimating visible ingredients and calorie totals.</p>
+                        </div>
+                    </div>
+
+                    <div id="results-dashboard" class="dashboard hidden">
+                        <div>
+                            <h2 id="meal-title" class="section-title">Meal Breakdown</h2>
+                            <p id="meal-status-subtitle" class="text-xs text-slate-400 mt-0.5">Estimated nutritional properties</p>
+                        </div>
+
+                        <div id="ingredient-rows" class="rows"></div>
+
+                        <div class="summary">
+                            <div class="ring">
+                                <svg viewBox="0 0 36 36" aria-hidden="true">
+                                    <path d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831" fill="none" stroke="#dce3ea" stroke-width="3.5"/>
+                                    <path id="progress-circle" d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831" fill="none" stroke="#18a86b" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="0, 100"/>
+                                </svg>
+                                <span id="percentage-label">0%</span>
+                            </div>
+                            <div>
+                                <p class="summary-title">Total Calories</p>
+                                <p class="summary-detail"><strong id="total-kcal-val">0</strong> kcal of 1850 daily target</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="actions">
+                <button id="save-btn" class="btn btn-primary hidden" type="button">Save to Log</button>
+                <button id="reset-btn" class="btn btn-secondary hidden" type="button">Retake Photo</button>
+            </footer>
+        </section>
+    </main>
+
+    <script>
+        const BACKEND_URL = "http://127.0.0.1:8001/api/scan";
+        const HEALTH_URL = "http://127.0.0.1:8001/api/health";
+        const DAILY_TARGET = 1850;
+        const colors = ["#18a86b", "#d9931d", "#d85656", "#3478cf", "#8a61cc"];
+
+        const fileInput = document.getElementById("file-input");
+        const uploadBox = document.getElementById("upload-box");
+        const previewContainer = document.getElementById("image-preview-container");
+        const previewImage = document.getElementById("image-preview");
+        const emptyState = document.getElementById("empty-state");
+        const loadingState = document.getElementById("loading-state");
+        const dashboard = document.getElementById("results-dashboard");
+        const errorBox = document.getElementById("error-box");
+        const resetBtn = document.getElementById("reset-btn");
+        const saveBtn = document.getElementById("save-btn");
+        const apiStatus = document.getElementById("api-status");
+
+        fileInput.addEventListener("change", handleImageUpload);
+        resetBtn.addEventListener("click", resetUI);
+        saveBtn.addEventListener("click", () => {
+            saveBtn.textContent = "Saved";
+            window.setTimeout(() => {
+                saveBtn.textContent = "Save to Log";
+            }, 1300);
+        });
+
+        checkHealth();
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(HEALTH_URL);
+                const data = await response.json();
+                apiStatus.textContent = data.openrouter_configured || data.gemini_configured ? "OpenRouter ready" : "Demo mode";
+            } catch {
+                apiStatus.textContent = "API offline";
+            }
+        }
+
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showError("");
+            previewImage.src = URL.createObjectURL(file);
+            previewContainer.classList.remove("hidden");
+            uploadBox.classList.add("hidden");
+            emptyState.classList.add("hidden");
+            dashboard.classList.add("hidden");
+            loadingState.classList.remove("hidden");
+            saveBtn.classList.add("hidden");
+            resetBtn.classList.remove("hidden");
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(payload.detail || "The scan request failed.");
+                }
+
+                renderDashboard(payload);
+            } catch (error) {
+                loadingState.classList.add("hidden");
+                emptyState.classList.remove("hidden");
+                showError(error.message || "Unable to connect to the backend API.");
+            }
+        }
+
+        function renderDashboard(data) {
+            loadingState.classList.add("hidden");
+            emptyState.classList.add("hidden");
+            dashboard.classList.remove("hidden");
+            saveBtn.classList.remove("hidden");
+            resetBtn.classList.remove("hidden");
+
+            document.getElementById("meal-title").textContent = data.meal_title || "Meal Breakdown";
+            document.getElementById("meal-status-subtitle").textContent =
+                apiStatus.textContent === "Demo mode"
+                    ? "Demo analysis complete"
+                    : "Nutritional analysis complete";
+
+            const rowsContainer = document.getElementById("ingredient-rows");
+            rowsContainer.innerHTML = "";
+
+            const ingredients = Array.isArray(data.ingredients) ? data.ingredients : [];
+            ingredients.forEach((item, index) => {
+                const calories = Number(item.calories) || 0;
+                const weight = Number(item.weight_grams) || 0;
+                const fillRatio = Math.min((calories / 300) * 100, 100);
+
+                const row = document.createElement("div");
+                row.className = "ingredient";
+                row.innerHTML = `
+                    <div class="ingredient-head">
+                        <div class="ingredient-name"></div>
+                        <div class="calories"></div>
+                    </div>
+                    <div class="bar"><div class="bar-fill"></div></div>
+                `;
+
+                row.querySelector(".ingredient-name").textContent = `${item.name || "Food item"} (${weight}g)`;
+                row.querySelector(".calories").textContent = `${calories} kcal`;
+                const fill = row.querySelector(".bar-fill");
+                fill.style.background = colors[index % colors.length];
+                rowsContainer.appendChild(row);
+                requestAnimationFrame(() => {
+                    fill.style.width = `${fillRatio}%`;
+                });
+            });
+
+            const total = Number(data.total_calories) || ingredients.reduce((sum, item) => sum + (Number(item.calories) || 0), 0);
+            const percentage = Math.round((total / DAILY_TARGET) * 100);
+            document.getElementById("total-kcal-val").textContent = total;
+            document.getElementById("percentage-label").textContent = `${percentage}%`;
+            document.getElementById("progress-circle").setAttribute("stroke-dasharray", `${Math.min(percentage, 100)}, 100`);
+        }
+
+        function resetUI() {
+            fileInput.value = "";
+            uploadBox.classList.remove("hidden");
+            previewContainer.classList.add("hidden");
+            previewImage.removeAttribute("src");
+            loadingState.classList.add("hidden");
+            dashboard.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+            saveBtn.classList.add("hidden");
+            resetBtn.classList.add("hidden");
+            showError("");
+            checkHealth();
+        }
+
+        function showError(message) {
+            if (!message) {
+                errorBox.classList.add("hidden");
+                errorBox.textContent = "";
+                return;
+            }
+            errorBox.textContent = message;
+            errorBox.classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
