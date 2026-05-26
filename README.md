@@ -1,2 +1,2 @@
 ### Aka Nutri-scanAI
-Prototype Mini feature on current
+Prototype Mini feature on current project
