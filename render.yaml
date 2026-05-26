@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: nutriscan-backend
+    runtime: python
+    rootDir: Backend
+    buildCommand: pip install -r requirement.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+
+  - type: web
+    name: nutriscan-frontend
+    runtime: static
+    rootDir: Frontend
+    buildCommand: ""
+    staticPublishPath: .
