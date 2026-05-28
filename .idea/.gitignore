@@ -1,5 +1,9 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
+# Ignore environment secrets
+.env
+Backend/.env
+
+# Ignore python caches and logs
+__pycache__/
+Backend/__pycache__/
+*.log
+.idea/

@@ -529,8 +529,9 @@
     </main>
 
     <script>
-        const BACKEND_URL = "http://127.0.0.1:8001/api/scan";
-        const HEALTH_URL = "http://127.0.0.1:8001/api/health";
+        const API_BASE_URL = window.NUTRISCAN_API_BASE_URL || "https://calorie-counter-h7lz.onrender.com";
+        const BACKEND_URL = "https://calorie-counter-h7lz.onrender.com/api/scan";
+        const HEALTH_URL = `${API_BASE_URL}/api/health`;
         const DAILY_TARGET = 1850;
         const colors = ["#18a86b", "#d9931d", "#d85656", "#3478cf", "#8a61cc"];
 
