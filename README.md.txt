@@ -1,4 +1,4 @@
-Calorie-Counter AI AgentA streamlined, intelligent nutrition tracking application that leverages Gemini 2.5 to provide instant caloric and macronutrient analysis of meals. Built with a robust FastAPI backend and a clean, responsive frontend.
+# Calorie-Counter AI AgentA streamlined, intelligent nutrition tracking application that leverages Gemini 2.5 to provide instant caloric and macronutrient analysis of meals. Built with a robust FastAPI backend and a clean, responsive frontend.
 
 ## 🚀 Overview
 
